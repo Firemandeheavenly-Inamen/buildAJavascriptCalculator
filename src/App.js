@@ -1,25 +1,167 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import Calculator from "./Calculator";
+import "./App.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      firstInput: "",
+      operators: "",
+      secondInput: "",
+    };
+    this.handleClick = this.handleClick.bind(this);
+    this.calculateResult = this.calculateResult.bind(this);
+  }
+
+  handleClick(e) {
+    const key = e.target.innerText;
+
+    if (key === "C") {
+      this.setState({
+        firstInput: "",
+        operators: "",
+        secondInput: "",
+      });
+    } else if (!isNaN(parseInt(key))) {
+      if (this.state.operators === "") {
+        if (this.state.firstInput === "0" && key === "0") {
+          this.setState({
+            firstInput: "0",
+          });
+        } else if (this.state.firstInput === "0") {
+          this.setState({
+            firstInput: key,
+          });
+        } else {
+          this.setState((state) => ({
+            firstInput: state.firstInput + key,
+          }));
+        }
+      } else {
+        if (this.state.secondInput === "0" && key === "0") {
+          this.setState({
+            secondInput: "0",
+          });
+        } else if (this.state.secondInput === "0") {
+          this.setState({
+            secondInput: key,
+          });
+        } else {
+          this.setState((state) => ({
+            secondInput: state.secondInput + key,
+          }));
+        }
+      }
+    } else if (key === ".") {
+      // Float point
+      if (this.state.operators === "") {
+        if (!this.state.firstInput.includes(".")) {
+          this.setState((state) => ({
+            firstInput: state.firstInput + key,
+          }));
+        }
+      } else {
+        if (!this.state.secondInput.includes(".")) {
+          this.setState((state) => ({
+            secondInput: state.secondInput + key,
+          }));
+        }
+      }
+    } else if (key === "=") {
+      if (this.state.firstInput !== "" && this.state.secondInput !== "") {
+        let result = this.calculateResult(
+          this.state.firstInput,
+          this.state.secondInput,
+          this.state.operators
+        );
+        this.setState({
+          firstInput: result,
+          operators: "",
+          secondInput: "",
+        });
+      }
+    } else if (["+", "-", "*", "/"].indexOf(key) !== -1) {
+      if (
+        this.state.firstInput !== "" &&
+        this.state.operators !== "" &&
+        this.state.secondInput !== "" &&
+        this.state.secondInput !== "-"
+      ) {
+        let result = this.calculateResult(
+          this.state.firstInput,
+          this.state.secondInput,
+          this.state.operators
+        );
+        this.setState({
+          firstInput: result,
+          operators: key,
+          secondInput: "",
+        });
+      } else if (
+        this.state.firstInput !== "" &&
+        this.state.firstInput !== "-"
+      ) {
+        if (this.state.operators === "") {
+          this.setState({
+            operators: key,
+          });
+        } else if (key === "-") {
+          this.setState({
+            secondInput: key,
+          });
+        } else if (this.state.operators !== "") {
+          this.setState({
+            operators: key,
+            secondInput: "",
+          });
+        }
+      } else if (this.state.firstInput === "" && key === "-") {
+        this.setState({
+          firstInput: key,
+        });
+      } else if (this.state.firstInput === "-" && key === "+") {
+        this.setState({
+          firstInput: "",
+        });
+      }
+    }
+  }
+
+  calculateResult(firstNumber, secondNumber, operator) {
+    let result = 0;
+    firstNumber = parseFloat(firstNumber);
+    secondNumber = parseFloat(secondNumber);
+    switch (operator) {
+      case "+":
+        result = firstNumber + secondNumber;
+        break;
+      case "-":
+        result = firstNumber - secondNumber;
+        break;
+      case "*":
+        result = firstNumber * secondNumber;
+        break;
+      case "/":
+        result = firstNumber / secondNumber;
+        break;
+      default:
+        break;
+    }
+    return result.toString();
+  }
+
+  render() {
+    const { firstInput, operators, secondInput } = this.state;
+    return (
+      <div className="App">
+        <Calculator
+          firstInput={firstInput}
+          operators={operators}
+          secondInput={secondInput}
+          handleClick={this.handleClick}
+        />
+      </div>
+    );
+  }
 }
-
-export default App;
